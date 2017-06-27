@@ -11,19 +11,24 @@ global.document = doc
 global.window = doc.defaultView
 
 const mocks = () => {
-  const mockStream = () => () => Observable.of('foo')
-  const mockStore = createStore(() => {});
+  const mockHandler = (state$, props$) =>
+    Observable.combineLatest(
+      state$,
+      props$,
+      (state, props) => ({ state, props }),
+    )
+  const mockStore = createStore(() => null);
   return {
-    mockStream,
+    mockHandler,
     mockStore
   }
 }
 
 describe('fusion', () => {
   it('should render the wrapped component', () => {
-    const { mockStream, mockStore } = mocks()
+    const { mockHandler, mockStore } = mocks()
     const WrappedComponent = () => <div />
-    const FusedComponent = fuse(mockStream)(WrappedComponent)
+    const FusedComponent = fuse(mockHandler)(WrappedComponent)
     const enz = mount(
       <FusedComponent />,
       { context: { store: mockStore } }
